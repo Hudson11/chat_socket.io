@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+
+    <form id="formAction">
+
+        <input type="text" name="username" id="username" placeholder="Digite seu usuário"/>
+        <div class="message">
+            
+        </div>
+        <input type="text" name="message" id="message" placeholder="Digite a mensagem"/>
+        <button type="submit">Enviar</button>
+
+    </form>
+
+<script>
+
+    var socket = io('http://localhost:3001');
+
+    function renderMessage(message){
+        $('.message').append('<div class="message-item"> <strong>'+ message.author + '</strong> <p>' + message.message + '</p> </div>');
+    }
+
+    function renderUsers(user){
+        $('.users').append('<div class="message-item"> <strong>'+ user.author + '</strong> </div>');
+    }
+
+    socket.on('receivedMessage', data => {
+        renderMessage(data);
+    });
+
+    socket.on('previewsMessage', messages => {
+        for(message of messages){
+            renderMessage(message);
+        }
+    });
+
+    socket.on('users', users =>{
+        for(user of users){
+            renderUsers(user);
+        }
+    })
+
+    $('#formAction').submit((event) => {
+        event.preventDefault();
+
+        var user = $('input[name=username]').val();
+        var message = $('input[name=message]').val();
+
+        if(user.length && message.length){
+
+            var messageObject = {
+                author: user,
+                message, message
+            }
+            socket.emit('sendMessage', messageObject);
+            renderMessage(messageObject);
+        }
+        
+    });    
+
+</script>
+</body>
+</html>
